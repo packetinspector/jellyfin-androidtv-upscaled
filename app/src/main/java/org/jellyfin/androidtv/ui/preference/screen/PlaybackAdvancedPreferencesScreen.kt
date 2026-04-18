@@ -121,6 +121,13 @@ class PlaybackAdvancedPreferencesScreen : OptionsFragment() {
 				setTitle(R.string.pref_external_player)
 				bind(userPreferences, UserPreferences.useExternalPlayer)
 			}
+
+			checkbox {
+				setTitle(R.string.pref_pip_enabled)
+				setContent(R.string.pref_pip_enabled_desc)
+				bind(userPreferences, UserPreferences.pipEnabled)
+				depends { Build.VERSION.SDK_INT >= Build.VERSION_CODES.O }
+			}
 		}
 
 		category {

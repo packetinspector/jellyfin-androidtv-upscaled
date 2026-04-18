@@ -84,6 +84,17 @@ fun SettingsDeveloperScreen() {
 		}
 
 		item {
+			// Seek while playing (live seek)
+			var seekWhilePlaying by rememberPreference(userPreferences, UserPreferences.seekWhilePlaying)
+			ListButton(
+				headingContent = { Text(stringResource(R.string.preference_seek_while_playing)) },
+				trailingContent = { Checkbox(checked = seekWhilePlaying) },
+				captionContent = { Text(stringResource(R.string.preference_seek_while_playing_description)) },
+				onClick = { seekWhilePlaying = !seekWhilePlaying }
+			)
+		}
+
+		item {
 			// FFmpeg audio extension
 			var preferExoPlayerFfmpeg by rememberPreference(userPreferences, UserPreferences.preferExoPlayerFfmpeg)
 			ListButton(

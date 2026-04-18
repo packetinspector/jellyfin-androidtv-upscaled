@@ -27,6 +27,7 @@ import androidx.media3.common.TrackGroup;
 import androidx.media3.common.TrackSelectionOverride;
 import androidx.media3.common.TrackSelectionParameters;
 import androidx.media3.common.Tracks;
+import androidx.media3.common.VideoSize;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.HttpDataSource;
@@ -45,6 +46,7 @@ import androidx.media3.ui.PlayerView;
 import org.jellyfin.androidtv.R;
 import org.jellyfin.androidtv.data.compat.StreamInfo;
 import org.jellyfin.androidtv.preference.UserPreferences;
+import org.jellyfin.androidtv.ui.playback.pip.PiPManager;
 import org.jellyfin.androidtv.preference.constant.ZoomMode;
 import org.jellyfin.sdk.api.client.ApiClient;
 import org.jellyfin.sdk.model.api.MediaStream;
@@ -75,6 +77,16 @@ public class VideoManager {
     private long mMetaDuration = -1;
     private long lastExoPlayerPosition = -1;
     private boolean nightModeEnabled;
+    private boolean mResumePlayAfterSeek = false;
+
+    private boolean seekInProgress = false;
+    private final Runnable seekTimeoutRunnable = () -> {
+        if (seekInProgress) {
+            Timber.w("Seek timeout reached — forcing seek completion");
+            seekInProgress = false;
+            if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onSeekComplete();
+        }
+    };
 
     public boolean isContracted = false;
 
@@ -129,11 +141,18 @@ public class VideoManager {
             @Override
             public void onIsPlayingChanged(boolean isPlaying) {
                 if (isPlaying) {
+                    if (seekInProgress) {
+                        seekInProgress = false;
+                        mHandler.removeCallbacks(seekTimeoutRunnable);
+                        if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onSeekComplete();
+                    }
                     if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onPrepared();
                     startProgressLoop();
                     _helper.setScreensaverLock(true);
                 } else {
-                    stopProgressLoop();
+                    if (!seekInProgress) {
+                        stopProgressLoop();
+                    }
                     _helper.setScreensaverLock(false);
                 }
             }
@@ -142,6 +161,20 @@ public class VideoManager {
             public void onPlaybackStateChanged(int playbackState) {
                 if (playbackState == Player.STATE_BUFFERING) {
                     Timber.d("Player is buffering");
+                }
+
+                // Detect seek completion when player becomes ready
+                if (playbackState == Player.STATE_READY && seekInProgress) {
+                    seekInProgress = false;
+                    mHandler.removeCallbacks(seekTimeoutRunnable);
+                    if (mPlaybackControllerNotifiable != null) mPlaybackControllerNotifiable.onSeekComplete();
+                }
+
+                // When seek-while-playing is enabled and player becomes ready, ensure playback resumes
+                if (playbackState == Player.STATE_READY && mResumePlayAfterSeek) {
+                    Timber.i("Player ready after seek - resuming playback");
+                    mExoPlayer.setPlayWhenReady(true);
+                    mResumePlayAfterSeek = false;
                 }
 
                 if (playbackState == Player.STATE_ENDED) {
@@ -173,6 +206,14 @@ public class VideoManager {
             @Override
             public void onTracksChanged(Tracks tracks) {
                 Timber.d("Tracks changed");
+            }
+
+            @Override
+            public void onVideoSizeChanged(@NonNull VideoSize videoSize) {
+                if (videoSize.width > 0 && videoSize.height > 0) {
+                    PiPManager pipManager = KoinJavaComponent.get(PiPManager.class);
+                    pipManager.updateAspectRatio(videoSize.width, videoSize.height);
+                }
             }
         });
     }
@@ -326,6 +367,30 @@ public class VideoManager {
             return -1;
 
         Timber.i("Exo length in seek is: %d", getDuration());
+        seekInProgress = true;
+        mHandler.removeCallbacks(seekTimeoutRunnable);
+        mHandler.postDelayed(seekTimeoutRunnable, 8000);
+        // Preserve playWhenReady so consecutive seeks don't pause playback
+        if (mExoPlayer.isPlaying() || mExoPlayer.getPlayWhenReady()) {
+            mExoPlayer.setPlayWhenReady(true);
+        }
+        mExoPlayer.seekTo(pos);
+        return pos;
+    }
+
+    /**
+     * Seek to position and ensure playback continues.
+     * Used when seek-while-playing preference is enabled.
+     */
+    public long seekToAndPlay(long pos) {
+        if (!isInitialized())
+            return -1;
+
+        Timber.i("SeekToAndPlay: seeking to %d, current playWhenReady=%b", pos, mExoPlayer.getPlayWhenReady());
+        // Set flag to resume playback when player becomes ready after seek
+        mResumePlayAfterSeek = true;
+        // Ensure playWhenReady is true before seeking so playback continues
+        mExoPlayer.setPlayWhenReady(true);
         mExoPlayer.seekTo(pos);
         return pos;
     }

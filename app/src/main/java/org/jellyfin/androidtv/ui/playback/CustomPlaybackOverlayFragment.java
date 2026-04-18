@@ -398,6 +398,12 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                 if (playbackControllerContainer.getValue().getPlaybackController().isLiveTv()) hide();
             } else if (mGuideVisible) {
                 hideGuide();
+            } else if (requireActivity() instanceof PlaybackActivity) {
+                // In PlaybackActivity, disable this callback and let the activity handle back
+                // (it will enter PiP if enabled, or finish otherwise)
+                setEnabled(false);
+                requireActivity().getOnBackPressedDispatcher().onBackPressed();
+                setEnabled(true);
             } else {
                 closePlayer();
             }
@@ -571,7 +577,7 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                         }
                     }
 
-                    // Control fast forward and rewind if overlay hidden and not showing live TV
+                    // Control fast forward and rewind (not live TV)
                     if (!playbackControllerContainer.getValue().getPlaybackController().isLiveTv()) {
                         if (keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD || keyCode == KeyEvent.KEYCODE_BUTTON_R1 || keyCode == KeyEvent.KEYCODE_BUTTON_R2) {
                             playbackControllerContainer.getValue().getPlaybackController().fastForward();
@@ -584,17 +590,19 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                             setFadingEnabled(true);
                             return true;
                         }
+
                     }
 
                     if (!mIsVisible) {
+                        // DPAD right/left trigger skip forward/back only when overlay is hidden
                         if (!playbackControllerContainer.getValue().getPlaybackController().isLiveTv()) {
                             if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                                setFadingEnabled(true);
+                                playbackControllerContainer.getValue().getPlaybackController().fastForward();
                                 return true;
                             }
 
                             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                                setFadingEnabled(true);
+                                playbackControllerContainer.getValue().getPlaybackController().rewind();
                                 return true;
                             }
                         }
@@ -613,10 +621,12 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
                 }
             }
 
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_DPAD_LEFT:
-                case KeyEvent.KEYCODE_DPAD_RIGHT:
-                    leanbackOverlayFragment.getPlayerGlue().setInjectedViewsVisibility();
+            if (mIsVisible) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_DPAD_LEFT:
+                    case KeyEvent.KEYCODE_DPAD_RIGHT:
+                        leanbackOverlayFragment.getPlayerGlue().setInjectedViewsVisibility();
+                }
             }
 
             return false;
@@ -699,6 +709,15 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         super.onStop();
         Timber.i("Stopping!");
 
+        // Guard: if the host activity is in PiP mode AND not being destroyed, keep the player alive.
+        // If the activity is finishing (user dismissed PiP or app is exiting), always clean up.
+        if (requireActivity() instanceof PlaybackActivity &&
+                ((PlaybackActivity) requireActivity()).isInPipMode() &&
+                !requireActivity().isFinishing()) {
+            Timber.i("Skipping endPlayback — activity is in PiP mode");
+            return;
+        }
+
         if (leanbackOverlayFragment != null)
             leanbackOverlayFragment.setOnKeyInterceptListener(null);
 
@@ -709,7 +728,15 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
             playbackControllerContainer.getValue().getPlaybackController().endPlayback();
         }
 
-        closePlayer();
+        // In PlaybackActivity, only finish the activity if it is actually stopping
+        // (not when this fragment is being replaced by onNewIntent).
+        if (requireActivity() instanceof PlaybackActivity) {
+            if (requireActivity().isFinishing()) {
+                closePlayer();
+            }
+        } else {
+            closePlayer();
+        }
     }
 
     public void show() {
@@ -1309,7 +1336,9 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         if (navigating) return;
         navigating = true;
 
-        if (navigationRepository.getValue().getCanGoBack()) {
+        if (requireActivity() instanceof PlaybackActivity) {
+            requireActivity().finish();
+        } else if (navigationRepository.getValue().getCanGoBack()) {
             navigationRepository.getValue().goBack();
         } else {
             navigationRepository.getValue().reset(Destinations.INSTANCE.getHome());
@@ -1320,14 +1349,22 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         if (navigating) return;
         navigating = true;
 
-        navigationRepository.getValue().navigate(Destinations.INSTANCE.nextUp(id), true);
+        if (requireActivity() instanceof PlaybackActivity) {
+            ((PlaybackActivity) requireActivity()).showNextUp(id);
+        } else {
+            navigationRepository.getValue().navigate(Destinations.INSTANCE.nextUp(id), true);
+        }
     }
 
     public void showStillWatching(@NonNull UUID id) {
         if (navigating) return;
         navigating = true;
 
-        navigationRepository.getValue().navigate(Destinations.INSTANCE.stillWatching(id), true);
+        if (requireActivity() instanceof PlaybackActivity) {
+            ((PlaybackActivity) requireActivity()).showStillWatching(id);
+        } else {
+            navigationRepository.getValue().navigate(Destinations.INSTANCE.stillWatching(id), true);
+        }
     }
 
     @Override

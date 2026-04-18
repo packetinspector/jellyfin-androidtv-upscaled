@@ -33,6 +33,7 @@ import org.jellyfin.androidtv.ui.playback.overlay.action.ClosedCaptionsAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.CustomAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.FastForwardAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.GuideAction;
+import org.jellyfin.androidtv.ui.playback.overlay.action.MediaInfoAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.PlayPauseAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.PlaybackSpeedAction;
 import org.jellyfin.androidtv.ui.playback.overlay.action.PreviousLiveTvChannelAction;
@@ -63,6 +64,7 @@ public class CustomPlaybackTransportControlGlue extends PlaybackTransportControl
     private PlaybackSpeedAction playbackSpeedAction;
     private ZoomAction zoomAction;
     private ChapterAction chapterAction;
+    private MediaInfoAction mediaInfoAction;
 
     // TV actions
     private PreviousLiveTvChannelAction previousLiveTvChannelAction;
@@ -114,6 +116,7 @@ public class CustomPlaybackTransportControlGlue extends PlaybackTransportControl
         selectAudioAction.dismissPopup();
         selectQualityAction.dismissPopup();
         zoomAction.dismissPopup();
+        mediaInfoAction.dismissDialog();
 
         super.onDetachedFromHost();
     }
@@ -204,6 +207,8 @@ public class CustomPlaybackTransportControlGlue extends PlaybackTransportControl
         zoomAction.setLabels(new String[]{context.getString(R.string.lbl_zoom)});
         chapterAction = new ChapterAction(context, this);
         chapterAction.setLabels(new String[]{context.getString(R.string.lbl_chapters)});
+        mediaInfoAction = new MediaInfoAction(context, this);
+        mediaInfoAction.setLabels(new String[]{context.getString(R.string.lbl_media_info)});
 
         previousLiveTvChannelAction = new PreviousLiveTvChannelAction(context, this);
         previousLiveTvChannelAction.setLabels(new String[]{context.getString(R.string.lbl_prev_item)});
@@ -283,6 +288,7 @@ public class CustomPlaybackTransportControlGlue extends PlaybackTransportControl
         }
 
         secondaryActionsAdapter.add(zoomAction);
+        secondaryActionsAdapter.add(mediaInfoAction);
     }
 
     @Override

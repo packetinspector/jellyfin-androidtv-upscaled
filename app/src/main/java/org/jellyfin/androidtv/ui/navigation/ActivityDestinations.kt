@@ -7,6 +7,7 @@ import org.jellyfin.androidtv.ui.browsing.DisplayPreferencesScreen
 import org.jellyfin.androidtv.ui.livetv.GuideFiltersScreen
 import org.jellyfin.androidtv.ui.livetv.GuideOptionsScreen
 import org.jellyfin.androidtv.ui.playback.ExternalPlayerActivity
+import org.jellyfin.androidtv.ui.playback.PlaybackActivity
 import org.jellyfin.androidtv.ui.preference.PreferencesActivity
 import org.jellyfin.androidtv.ui.preference.dsl.OptionsFragment
 import org.jellyfin.androidtv.ui.preference.screen.CustomizationPreferencesScreen
@@ -41,6 +42,11 @@ object ActivityDestinations {
 
 	fun liveTvGuideFilterPreferences(context: Context) = preferenceIntent<GuideFiltersScreen>(context)
 	fun liveTvGuideOptionPreferences(context: Context) = preferenceIntent<GuideOptionsScreen>(context)
+
+	fun playbackActivity(context: Context, position: Int = 0) = Intent(context, PlaybackActivity::class.java).apply {
+		putExtra(PlaybackActivity.EXTRA_POSITION, position)
+		addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+	}
 
 	fun externalPlayer(context: Context, position: Duration = Duration.ZERO) = Intent(context, ExternalPlayerActivity::class.java).apply {
 		putExtras(

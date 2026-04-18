@@ -128,5 +128,13 @@
             android:theme="@style/Theme.Jellyfin.Preferences" />
 
         <activity android:name=".ui.playback.ExternalPlayerActivity" />
+
+        <activity
+            android:name=".ui.playback.PlaybackActivity"
+            android:launchMode="singleTop"
+            android:supportsPictureInPicture="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:resizeableActivity="true"
+            android:windowSoftInputMode="adjustNothing" />
     </application>
 </manifest>

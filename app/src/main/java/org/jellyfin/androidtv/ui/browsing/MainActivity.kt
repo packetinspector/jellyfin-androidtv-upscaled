@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.jellyfin.androidtv.auth.repository.SessionRepository
 import org.jellyfin.androidtv.auth.repository.UserRepository
+import org.jellyfin.androidtv.preference.UserPreferences
+import org.jellyfin.androidtv.ui.playback.pip.PiPManager
 import org.jellyfin.androidtv.databinding.ActivityMainBinding
 import org.jellyfin.androidtv.integration.LeanbackChannelWorker
 import org.jellyfin.androidtv.ui.InteractionTrackerViewModel
@@ -38,6 +40,8 @@ import timber.log.Timber
 class MainActivity : FragmentActivity() {
 	private val navigationRepository by inject<NavigationRepository>()
 	private val sessionRepository by inject<SessionRepository>()
+	private val userPreferences by inject<UserPreferences>()
+	private val pipManager by inject<PiPManager>()
 	private val userRepository by inject<UserRepository>()
 	private val interactionTrackerViewModel by viewModel<InteractionTrackerViewModel>()
 	private val workManager by inject<WorkManager>()
@@ -108,10 +112,33 @@ class MainActivity : FragmentActivity() {
 		interactionTrackerViewModel.activityPaused = true
 	}
 
+	override fun finish() {
+		// If PiP is active when the user exits the app, finish PlaybackActivity first
+		// to prevent an orphaned PiP window that can't be stopped.
+		if (pipManager.isCurrentlyInPiP) {
+			Timber.i("MainActivity finishing while PiP is active — stopping PiP playback")
+			pipManager.stopPiPPlayback()
+		}
+
+		super.finish()
+	}
+
 	override fun onStop() {
 		super.onStop()
 
-		workManager.enqueue(OneTimeWorkRequestBuilder<LeanbackChannelWorker>().build())
+		// Skip session cleanup and channel updates when PiP is currently active.
+		// This prevents destroying the session while the user is still watching in PiP
+		// and will return to browsing momentarily.
+		if (pipManager.isCurrentlyInPiP) {
+			Timber.i("MainActivity stopped but PiP is active — skipping session cleanup")
+			return
+		}
+
+		workManager.enqueueUniqueWork(
+			"leanback_channel_update",
+			androidx.work.ExistingWorkPolicy.KEEP,
+			OneTimeWorkRequestBuilder<LeanbackChannelWorker>().build(),
+		)
 
 		lifecycleScope.launch(Dispatchers.IO) {
 			Timber.i("MainActivity stopped")

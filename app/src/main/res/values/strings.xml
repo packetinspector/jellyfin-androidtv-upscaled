@@ -189,6 +189,10 @@
     <string name="lbl_audio_track">Select audio track</string>
     <string name="lbl_playback_speed">Playback speed</string>
     <string name="lbl_quality_profile">Quality profile</string>
+    <string name="lbl_media_info">Media info</string>
+    <string name="lbl_direct_play">Direct Play</string>
+    <string name="lbl_direct_stream">Direct Stream</string>
+    <string name="lbl_transcoding">Transcode</string>
     <string name="lbl_subtitle_track">Select subtitle track</string>
     <string name="btn_got_it">Got it</string>
     <string name="lbl_clear_queue">Clear queue</string>
@@ -253,6 +257,8 @@
     <string name="pref_theme_emerald">Classic emerald</string>
     <string name="pref_about_title">About</string>
     <string name="pref_external_player">Use external player</string>
+    <string name="pref_pip_enabled">Picture-in-Picture</string>
+    <string name="pref_pip_enabled_desc">Enter PiP mode when pressing back during video playback</string>
     <string name="pref_next_up_timeout_summary">How long to wait before playing the next item</string>
     <string name="pref_next_up_timeout_title">Next up timer duration</string>
     <string name="pref_next_up_timeout_disabled">∞</string>
@@ -536,6 +542,8 @@
     <string name="segment_type_unknown">Unknown segments</string>
     <string name="skip_forward_length">Skip forward length</string>
     <string name="preference_enable_trickplay">Enable trickplay in video player</string>
+    <string name="preference_seek_while_playing">Seek while playing</string>
+    <string name="preference_seek_while_playing_description">Keep video playing during seek operations instead of pausing</string>
     <string name="pref_subtitles_background_opacity">Subtitle background opacity</string>
     <string name="pref_troubleshooting">Troubleshooting</string>
     <string name="pref_report_device_profile_title">Report playback capabilities to server</string>

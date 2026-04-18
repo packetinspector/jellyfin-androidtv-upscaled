@@ -100,6 +100,12 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		var useExternalPlayer = booleanPreference("external_player", false)
 
 		/**
+		 * Enter Picture-in-Picture mode when pressing back during video playback.
+		 * Requires Android 8.0 (API 26) or higher.
+		 */
+		var pipEnabled = booleanPreference("pip_enabled", false)
+
+		/**
 		 * Change refresh rate to match media when device supports it
 		 */
 		var refreshRateSwitchingBehavior = enumPreference("refresh_rate_switching_behavior", RefreshRateSwitchingBehavior.DISABLED)
@@ -247,6 +253,11 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
 		 * Enable TrickPlay in legacy player user interface while seeking.
 		 */
 		var trickPlayEnabled = booleanPreference("trick_play_enabled", false)
+
+		/**
+		 * Keep video playing while seeking instead of pausing.
+		 */
+		var seekWhilePlaying = booleanPreference("seek_while_playing", false)
 
 		/**
   		 * Enable PGS subtitle direct-play.

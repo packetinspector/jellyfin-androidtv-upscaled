@@ -33,10 +33,13 @@ import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.ui.base.Icon
 import org.jellyfin.androidtv.ui.base.button.IconButton
 import org.jellyfin.androidtv.ui.base.popover.Popover
+import org.jellyfin.androidtv.ui.composable.rememberQueueEntry
 import org.jellyfin.androidtv.ui.player.base.PlayerSeekbar
 import org.jellyfin.playback.core.PlaybackManager
+import org.jellyfin.playback.core.mediastream.mediaStreamFlow
 import org.jellyfin.playback.core.model.PlayState
 import org.jellyfin.playback.core.queue.queue
+import org.jellyfin.playback.jellyfin.queue.baseItem
 import org.koin.compose.koinInject
 
 @Composable
@@ -57,6 +60,7 @@ fun VideoPlayerControls(
 			PlayPauseButton(playbackManager, playState)
 			RewindButton(playbackManager)
 			FastForwardButton(playbackManager)
+			MediaInfoButton(playbackManager)
 
 			Spacer(Modifier.weight(1f))
 
@@ -141,6 +145,37 @@ private fun FastForwardButton(
 		imageVector = ImageVector.vectorResource(R.drawable.ic_fast_forward),
 		contentDescription = stringResource(R.string.fast_forward),
 	)
+}
+
+@Composable
+private fun MediaInfoButton(
+	playbackManager: PlaybackManager,
+) {
+	val entry by rememberQueueEntry(playbackManager)
+	val mediaStream by entry?.mediaStreamFlow?.collectAsState(initial = null)
+		?: remember { mutableStateOf(null) }
+	val baseItem = entry?.baseItem
+	val fileSize = baseItem?.mediaSources?.firstOrNull()?.size
+
+	var expanded by remember { mutableStateOf(false) }
+
+	Box {
+		IconButton(
+			onClick = { expanded = true },
+		) {
+			Icon(
+				imageVector = ImageVector.vectorResource(R.drawable.ic_info),
+				contentDescription = stringResource(R.string.lbl_media_info),
+			)
+		}
+
+		MediaInfoPopover(
+			expanded = expanded,
+			onDismissRequest = { expanded = false },
+			mediaStream = mediaStream,
+			fileSize = fileSize,
+		)
+	}
 }
 
 @Composable

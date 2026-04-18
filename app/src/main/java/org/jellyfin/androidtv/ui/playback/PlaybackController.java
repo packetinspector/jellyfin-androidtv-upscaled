@@ -818,6 +818,21 @@ public class PlaybackController implements PlaybackControllerNotifiable {
 
     }
 
+    /**
+     * Force playback to resume regardless of current state.
+     * Used by seek-while-playing feature to ensure video resumes after seeking.
+     */
+    public void forcePlay() {
+        Timber.i("forcePlay called");
+        if (!hasInitializedVideoManager()) {
+            return;
+        }
+        mVideoManager.play();
+        mPlaybackState = PlaybackState.PLAYING;
+        if (mFragment != null) mFragment.setFadingEnabled(true);
+        startReportLoop();
+    }
+
     public void playPause() {
         switch (mPlaybackState) {
             case PLAYING:
@@ -935,12 +950,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
         }
 
         if (wasSeeking) {
-            Timber.d("Previous seek has not finished - cancelling seek from %s to %d", mCurrentPosition, pos);
-            if (isPaused()) {
-                refreshCurrentPosition();
-                play(mCurrentPosition);
-            }
-            return;
+            Timber.d("Previous seek still in progress - overriding with new seek to %d", pos);
         }
         wasSeeking = true;
 
@@ -999,7 +1009,12 @@ public class PlaybackController implements PlaybackControllerNotifiable {
             // stopProgressLoop() being called at the beginning of startProgressLoop keeps this from breaking. otherwise it would start twice
             // if seek() is called from skip()
             mPlaybackState = PlaybackState.SEEKING;
-            if (mVideoManager.seekTo(pos) < 0) {
+
+            // Check if seek-while-playing is enabled - use seekToAndPlay to ensure playback continues
+            boolean seekWhilePlaying = userPreferences.getValue().get(UserPreferences.Companion.getSeekWhilePlaying());
+            long seekResult = seekWhilePlaying ? mVideoManager.seekToAndPlay(pos) : mVideoManager.seekTo(pos);
+
+            if (seekResult < 0) {
                 if (mFragment != null)
                     Utils.showToast(mFragment.getContext(), mFragment.getString(R.string.seek_error));
                 pause();
@@ -1021,7 +1036,7 @@ public class PlaybackController implements PlaybackControllerNotifiable {
     };
 
     private void skip(int msec) {
-        if (hasInitializedVideoManager() && (isPlaying() || isPaused()) && spinnerOff && mVideoManager.getCurrentPosition() > 0) { //guard against skipping before playback has truly begun
+        if (hasInitializedVideoManager() && (isPlaying() || isPaused() || mPlaybackState == PlaybackState.SEEKING) && spinnerOff && mVideoManager.getCurrentPosition() > 0) { //guard against skipping before playback has truly begun
             mHandler.removeCallbacks(skipRunnable);
             refreshCurrentPosition();
             currentSkipPos = Utils.getSafeSeekPosition((currentSkipPos == 0 ? mCurrentPosition : currentSkipPos) + msec, getDuration());
@@ -1261,6 +1276,18 @@ public class PlaybackController implements PlaybackControllerNotifiable {
         }
         if (mFragment != null)
             mFragment.setCurrentTime(mCurrentPosition);
+    }
+
+    @Override
+    public void onSeekComplete() {
+        wasSeeking = false;
+        mSeekPosition = -1;
+
+        if (mPlaybackState == PlaybackState.PLAYING || mPlaybackState == PlaybackState.SEEKING) {
+            mPlaybackState = PlaybackState.PLAYING;
+            if (hasInitializedVideoManager()) mVideoManager.play();
+            startReportLoop();
+        }
     }
 
     public long getDuration() {

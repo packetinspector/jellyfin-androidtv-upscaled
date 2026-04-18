@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +51,7 @@ import org.jellyfin.androidtv.ui.composable.AsyncImage
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
+import org.jellyfin.androidtv.ui.playback.PlaybackActivity
 import org.jellyfin.androidtv.util.apiclient.getUrl
 import org.jellyfin.sdk.api.client.ApiClient
 import org.jellyfin.sdk.model.serializer.toUUIDOrNull
@@ -70,6 +72,8 @@ fun StillWatchingScreen(
 	val viewModel = koinViewModel<StillWatchingViewModel>()
 
 	val state by viewModel.state.collectAsState()
+	val context = LocalContext.current
+	val playbackActivity = context as? PlaybackActivity
 
 	LaunchedEffect(itemId) {
 		viewModel.setItemId(itemId)
@@ -85,9 +89,21 @@ fun StillWatchingScreen(
 	LaunchedEffect(state) {
 		when (state) {
 			// Open next item
-			StillWatchingState.STILL_WATCHING -> navigationRepository.navigate(Destinations.videoPlayer(0), true)
+			StillWatchingState.STILL_WATCHING -> {
+				if (playbackActivity != null) {
+					playbackActivity.playNextItem()
+				} else {
+					navigationRepository.navigate(Destinations.videoPlayer(0), true)
+				}
+			}
 			// Close activity
-			StillWatchingState.CLOSE -> navigationRepository.goBack()
+			StillWatchingState.CLOSE -> {
+				if (playbackActivity != null) {
+					playbackActivity.finish()
+				} else {
+					navigationRepository.goBack()
+				}
+			}
 			// Unknown state
 			else -> Unit
 		}

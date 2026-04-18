@@ -16,6 +16,7 @@ import org.jellyfin.androidtv.ui.browsing.MainActivity
 import org.jellyfin.androidtv.ui.playback.MediaManager
 import org.jellyfin.androidtv.ui.playback.PlaybackLauncher
 import org.jellyfin.androidtv.ui.playback.VideoQueueManager
+import org.jellyfin.androidtv.ui.playback.pip.PiPManager
 import org.jellyfin.androidtv.ui.playback.rewrite.RewriteMediaManager
 import org.jellyfin.androidtv.util.profile.createDeviceProfile
 import org.jellyfin.playback.core.playbackManager
@@ -38,7 +39,8 @@ val playbackModule = module {
 	single { VideoQueueManager() }
 	single<MediaManager> { RewriteMediaManager(get(), get()) }
 
-	single { PlaybackLauncher(get(), get(), get(), get()) }
+	single { PlaybackLauncher(get(), get(), get(), get(), get()) }
+	single { PiPManager(get()) }
 
 	single<HttpDataSource.Factory> {
 		val okHttpFactory = get<OkHttpFactory>()

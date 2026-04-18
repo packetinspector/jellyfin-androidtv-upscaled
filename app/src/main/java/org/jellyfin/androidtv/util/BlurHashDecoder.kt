@@ -112,7 +112,11 @@ object BlurHashDecoder {
 			}
 		}
 
-		return Bitmap.createBitmap(imageArray, width, height, Bitmap.Config.ARGB_8888)
+		// Use RGB_565 for blur hash placeholders — half the memory of ARGB_8888
+		// and indistinguishable for 32x32 blurred images
+		return Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565).apply {
+			setPixels(imageArray, 0, width, 0, 0, width, height)
+		}
 	}
 
 	private fun createCosines(size: Int, numComp: Int) = FloatArray(size * numComp) { index ->

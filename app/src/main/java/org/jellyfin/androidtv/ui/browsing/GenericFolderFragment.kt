@@ -31,7 +31,7 @@ class GenericFolderFragment : EnhancedBrowseFragment() {
 		if (showSpecialViewTypes.contains(mFolder.type)) {
 			if (mFolder.type != BaseItemKind.CHANNEL_FOLDER_ITEM) {
 				val resume = GetItemsRequest(
-					fields = ItemRepository.itemFields,
+					fields = ItemRepository.listItemFields,
 					parentId = mFolder.id,
 					limit = 50,
 					filters = setOf(ItemFilter.IS_RESUMABLE),
@@ -42,7 +42,7 @@ class GenericFolderFragment : EnhancedBrowseFragment() {
 			}
 
 			val latest = GetItemsRequest(
-				fields = ItemRepository.itemFields,
+				fields = ItemRepository.listItemFields,
 				parentId = mFolder.id,
 				limit = 50,
 				filters = setOf(ItemFilter.IS_UNPLAYED),
@@ -53,7 +53,7 @@ class GenericFolderFragment : EnhancedBrowseFragment() {
 		}
 
 		val byName = GetItemsRequest(
-			fields = ItemRepository.itemFields,
+			fields = ItemRepository.listItemFields,
 			parentId = mFolder.id,
 		)
 		val header = when (mFolder.type) {

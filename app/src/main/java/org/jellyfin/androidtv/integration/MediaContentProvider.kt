@@ -79,7 +79,7 @@ class MediaContentProvider : ContentProvider(), KoinComponent {
 			searchTerm = query,
 			recursive = true,
 			limit = limit,
-			fields = ItemRepository.itemFields
+			fields = ItemRepository.listItemFields
 		)
 
 		items

@@ -7,6 +7,8 @@ import coil3.ImageLoader
 import coil3.annotation.ExperimentalCoilApi
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
+import coil3.memory.MemoryCache
+import okio.Path.Companion.toOkioPath
 import coil3.network.NetworkFetcher
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.serviceLoaderEnabled
@@ -115,7 +117,23 @@ val appModule = module {
 	single {
 		ImageLoader.Builder(androidContext()).apply {
 			serviceLoaderEnabled(false)
-			logger(CoilTimberLogger(if (BuildConfig.DEBUG) Logger.Level.Warn else Logger.Level.Error))
+			logger(CoilTimberLogger(Logger.Level.Error))
+
+			// Cap memory cache to 15% of app heap (down from Coil's default 25%)
+			// to reduce memory pressure when PiP and browsing run simultaneously
+			memoryCache {
+				MemoryCache.Builder()
+					.maxSizePercent(androidContext(), percent = 0.15)
+					.build()
+			}
+
+			// Disk cache for images — avoids re-downloading posters/backdrops every session
+			diskCache {
+				coil3.disk.DiskCache.Builder()
+					.directory(androidContext().cacheDir.resolve("coil_image_cache").toOkioPath())
+					.maxSizeBytes(50L * 1024 * 1024) // 50 MB
+					.build()
+			}
 
 			components {
 				add(get<NetworkFetcher.Factory>())

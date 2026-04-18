@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.data.model.DataRefreshService
 import org.jellyfin.androidtv.ui.itemhandling.ItemLauncher
@@ -242,7 +242,7 @@ class SocketHandler(
 			append(text)
 		}
 
-		runBlocking(Dispatchers.Main) {
+		CoroutineScope(Dispatchers.Main).launch {
 			Toast.makeText(context, toastMessage, Toast.LENGTH_LONG).show()
 		}
 	}
