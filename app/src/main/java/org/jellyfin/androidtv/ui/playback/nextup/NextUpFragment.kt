@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.compose.content
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jellyfin.androidtv.R
 import org.jellyfin.androidtv.data.service.BackgroundService
 import org.jellyfin.androidtv.preference.UserPreferences
@@ -50,6 +51,7 @@ import org.jellyfin.androidtv.ui.base.Text
 import org.jellyfin.androidtv.ui.base.button.Button
 import org.jellyfin.androidtv.ui.base.button.ProgressButton
 import org.jellyfin.androidtv.ui.composable.AsyncImage
+import org.jellyfin.androidtv.ui.composable.FixedMotionDurationScale
 import org.jellyfin.androidtv.ui.composable.modifier.overscan
 import org.jellyfin.androidtv.ui.navigation.Destinations
 import org.jellyfin.androidtv.ui.navigation.NavigationRepository
@@ -158,13 +160,15 @@ fun NextUpOverlay(
 			// Make sure to cancel any running timer
 			confirmTimer.snapTo(0f)
 		} else {
-			confirmTimer.animateTo(
-				targetValue = 1f,
-				animationSpec = tween(
-					durationMillis = durationMillis,
-					easing = LinearEasing,
-				),
-			)
+			withContext(FixedMotionDurationScale) {
+				confirmTimer.animateTo(
+					targetValue = 1f,
+					animationSpec = tween(
+						durationMillis = durationMillis,
+						easing = LinearEasing,
+					),
+				)
+			}
 			onConfirm()
 		}
 	}
