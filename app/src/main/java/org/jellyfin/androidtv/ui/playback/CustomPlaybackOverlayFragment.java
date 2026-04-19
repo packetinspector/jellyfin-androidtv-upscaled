@@ -118,8 +118,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
     private final Handler mHandler = new Handler();
     private Runnable mHideTask;
 
-    private AudioManager mAudioManager;
-
     private boolean mFadeEnabled = false;
     private boolean mIsVisible = false;
     private boolean mPopupPanelVisible = false;
@@ -144,13 +142,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
 
         // stop any audio that may be playing
         mediaManager.getValue().stopAudio(true);
-
-        mAudioManager = (AudioManager) requireContext().getSystemService(Context.AUDIO_SERVICE);
-        if (mAudioManager == null) {
-            Timber.e("Unable to get audio manager");
-            Utils.showToast(requireContext(), R.string.msg_cannot_play_time);
-            return;
-        }
 
         requireActivity().setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
@@ -352,23 +343,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
             }
         });
     }
-
-    private AudioManager.OnAudioFocusChangeListener mAudioFocusChanged = new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {
-            switch (focusChange) {
-                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    playbackControllerContainer.getValue().getPlaybackController().pause();
-                    break;
-                case AudioManager.AUDIOFOCUS_LOSS:
-                    // We don't do anything here on purpose
-                    // On the Nexus we get this notification erroneously when first starting up
-                    // and in any instance that we navigate away from our page, we already handle
-                    // stopping video and handing back audio focus
-                    break;
-            }
-        }
-    };
 
     private OnItemViewClickedListener itemViewClickedListener = new OnItemViewClickedListener() {
         @Override
@@ -685,12 +659,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         insetsController.setSystemBarsBehavior(
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         );
-
-        if (mAudioManager.requestAudioFocus(mAudioFocusChanged, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-            Timber.e("Unable to get audio focus");
-            Utils.showToast(requireContext(), R.string.msg_cannot_play_time);
-            return;
-        }
     }
 
     @Override
@@ -699,9 +667,6 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
         if (mItemsToPlay == null || mItemsToPlay.isEmpty()) return;
 
         setPlayPauseActionState(0);
-
-        // give back audio focus
-        mAudioManager.abandonAudioFocus(mAudioFocusChanged);
     }
 
     @Override

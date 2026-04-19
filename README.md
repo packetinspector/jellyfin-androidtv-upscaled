@@ -60,7 +60,7 @@
 
 <!-- ====================== B A D G E S ====================== -->
 
-![Version](https://img.shields.io/badge/VERSION-v1.0.1-ff00ff?style=for-the-badge&labelColor=000000)
+![Version](https://img.shields.io/badge/VERSION-v1.0.2-ff00ff?style=for-the-badge&labelColor=000000)
 ![Platform](https://img.shields.io/badge/PLATFORM-Android%20TV-00f0ff?style=for-the-badge&logo=android&logoColor=aaff00&labelColor=000000)
 ![Built With](https://img.shields.io/badge/BUILT%20WITH-Docker-aaff00?style=for-the-badge&logo=docker&logoColor=00f0ff&labelColor=000000)
 ![License](https://img.shields.io/badge/LICENSE-GPLv2-ffe600?style=for-the-badge&labelColor=000000)
@@ -280,7 +280,7 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 
 <!-- ====================== W H A T S   N E W ====================== -->
 
-## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 0  .o0o
+## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 2  .o0o
 
 <details open>
 <summary><b><font color="#ff00ff">>> CLICK 2 EXPAND THE GUESTBOOK <<</font></b></summary>
@@ -345,6 +345,34 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 |  Debug build uses .debug applicationId suffix for side-by-side    |
 |  installation with the official release. R8 minification enabled  |
 |  for release-like performance while retaining debug signing.      |
++-------------------------------------------------------------------+
+
++-------------------------------------------------------------------+
+|  GUESTBOOK ENTRY #006                                  [v1.0.2]  |
++-------------------------------------------------------------------+
+|  BACK BUTTON FINDS ITS WAY HOME AGAIN                             |
+|  ------------------------------------                             |
+|  Fix: after playing an episode and returning to the app, pressing |
+|  Back from the show detail screen would eject you straight to the |
+|  Android TV launcher, and relaunching never showed Home again --  |
+|  forcing a full app restart to escape detail view. Root cause was |
+|  a SharedFlow replay desyncing the navigation stack when the      |
+|  activity resumed from playback. Back now reliably returns to     |
+|  Home like a well-mannered remote control should.                 |
++-------------------------------------------------------------------+
+
++-------------------------------------------------------------------+
+|  GUESTBOOK ENTRY #007                                  [v1.0.2]  |
++-------------------------------------------------------------------+
+|  PIP EXPAND NO LONGER PAUSES YOUR SHOW                            |
+|  -------------------------------------                            |
+|  Fix: expanding a Picture-in-Picture window back to fullscreen    |
+|  (double-tap Home, tap the expand control, etc.) would silently   |
+|  pause the video. Two separate audio focus managers -- ExoPlayer  |
+|  and a legacy fragment-level handler -- were stepping on each     |
+|  other, with the fragment's focus request kicking ExoPlayer out   |
+|  of its own focus slot and auto-pausing. Removed the duplicate.   |
+|  ExoPlayer owns audio focus, as intended.                         |
 +-------------------------------------------------------------------+
 ```
 
