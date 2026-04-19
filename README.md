@@ -338,13 +338,15 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 +-------------------------------------------------------------------+
 
 +-------------------------------------------------------------------+
-|  GUESTBOOK ENTRY #005                                  [v1.0.0]  |
+|  GUESTBOOK ENTRY #005                                  [v1.0.1]  |
 +-------------------------------------------------------------------+
-|  DEBUG BUILD GETS THE .debug TREATMENT                            |
-|  -------------------------------------                            |
-|  Debug build uses .debug applicationId suffix for side-by-side    |
-|  installation with the official release. R8 minification enabled  |
-|  for release-like performance while retaining debug signing.      |
+|  REBRAND -- NOW IT'S "JELLYFIN UPSCALED"                          |
+|  ---------------------------------------                          |
+|  Build uses the .upscaled applicationId suffix and ships as       |
+|  "Jellyfin Upscaled" in your Android launcher -- install it side- |
+|  by-side with the official Jellyfin client, no conflicts. R8      |
+|  minification stays on for release-like performance while keeping |
+|  debug signing so anyone can build + sideload from source.        |
 +-------------------------------------------------------------------+
 
 +-------------------------------------------------------------------+
