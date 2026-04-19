@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.1
+
+### Branding
+- App is now branded as **Jellyfin Upscaled** in the Android launcher instead of "Jellyfin Debug"
+- Application ID suffix changed from `.debug` to `.upscaled` (package `org.jellyfin.androidtv.upscaled`)
+- Still installs side-by-side with the official Jellyfin Android TV client
+
+### Upstream Sync
+- Merged upstream `release-0.19.z` branch — includes latest upstream stability fixes and maintenance updates
+
 ## v1.0.0
 
 ### Picture-in-Picture Support

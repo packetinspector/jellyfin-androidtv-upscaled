@@ -64,8 +64,8 @@ android {
 		}
 
 		debug {
-			// Use different application id to run release and debug at the same time
-			applicationIdSuffix = ".debug"
+			// Use different application id so Upscaled can install alongside the official Jellyfin app
+			applicationIdSuffix = ".upscaled"
 
 			// Optimize like release: R8 minification + disable debuggable for full ART JIT
 			isMinifyEnabled = true
@@ -78,7 +78,7 @@ android {
 			resValue("string", "app_search_suggest_intent_data", "content://${namespace + applicationIdSuffix}.content/intent")
 
 			// Set flavored application name
-			resValue("string", "app_name", "@string/app_name_debug")
+			resValue("string", "app_name", "@string/app_name_upscaled")
 
 			buildConfigField("boolean", "DEVELOPMENT", (defaultConfig.versionCode!! < 100).toString())
 		}

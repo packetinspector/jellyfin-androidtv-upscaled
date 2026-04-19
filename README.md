@@ -60,7 +60,7 @@
 
 <!-- ====================== B A D G E S ====================== -->
 
-![Version](https://img.shields.io/badge/VERSION-v1.0.0--fork-ff00ff?style=for-the-badge&labelColor=000000)
+![Version](https://img.shields.io/badge/VERSION-v1.0.1-ff00ff?style=for-the-badge&labelColor=000000)
 ![Platform](https://img.shields.io/badge/PLATFORM-Android%20TV-00f0ff?style=for-the-badge&logo=android&logoColor=aaff00&labelColor=000000)
 ![Built With](https://img.shields.io/badge/BUILT%20WITH-Docker-aaff00?style=for-the-badge&logo=docker&logoColor=00f0ff&labelColor=000000)
 ![License](https://img.shields.io/badge/LICENSE-GPLv2-ffe600?style=for-the-badge&labelColor=000000)
@@ -182,9 +182,10 @@ ENERGY**. Just code and a deep, abiding love for media servers and 256-color GIF
 </tr>
 <tr bgcolor="#0a0a0a">
   <td valign="top"><b><font color="#ff00ff">SIDE-BY-SIDE INSTALL</font></b></td>
-  <td><font color="#ffffff">Debug build uses the <tt>.debug</tt> applicationId
-  suffix so you can run this fork RIGHT NEXT TO the official Jellyfin client on
-  the same device. Use both. Compare. Live your truth.</font></td>
+  <td><font color="#ffffff">Upscaled uses the <tt>.upscaled</tt> applicationId
+  suffix and ships as "Jellyfin Upscaled" in your Android launcher -- so you
+  can run this fork RIGHT NEXT TO the official Jellyfin client on the same
+  device. Use both. Compare. Live your truth.</font></td>
 </tr>
 </table>
 
@@ -215,13 +216,13 @@ ENERGY**. Just code and a deep, abiding love for media servers and 256-color GIF
 ;----------------------------------------------------------------
 ```
 
->> [**[ DOWNLOAD THE APK FROM THE LATEST RELEASE ]**](https://github.com/packetinspector/jellyfin-androidtv-upscaled/releases/tag/v1.0.0-fork) <<
+>> [**[ DOWNLOAD THE APK FROM THE LATEST RELEASE ]**](https://github.com/packetinspector/jellyfin-androidtv-upscaled/releases/latest) <<
 
 If you already have the official client installed, you might get a signature
 mismatch. That's fine!! Just uninstall the old debug build first:
 
 ```bash
-adb uninstall org.jellyfin.androidtv.debug
+adb uninstall org.jellyfin.androidtv.upscaled
 ```
 
 Then install away.
