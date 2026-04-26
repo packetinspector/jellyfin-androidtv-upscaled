@@ -60,7 +60,7 @@
 
 <!-- ====================== B A D G E S ====================== -->
 
-![Version](https://img.shields.io/badge/VERSION-v1.0.2-ff00ff?style=for-the-badge&labelColor=000000)
+![Version](https://img.shields.io/badge/VERSION-v1.0.3-ff00ff?style=for-the-badge&labelColor=000000)
 ![Platform](https://img.shields.io/badge/PLATFORM-Android%20TV-00f0ff?style=for-the-badge&logo=android&logoColor=aaff00&labelColor=000000)
 ![Built With](https://img.shields.io/badge/BUILT%20WITH-Docker-aaff00?style=for-the-badge&logo=docker&logoColor=00f0ff&labelColor=000000)
 ![License](https://img.shields.io/badge/LICENSE-GPLv2-ffe600?style=for-the-badge&labelColor=000000)
@@ -280,7 +280,7 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 
 <!-- ====================== W H A T S   N E W ====================== -->
 
-## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 2  .o0o
+## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 3  .o0o
 
 <details open>
 <summary><b><font color="#ff00ff">>> CLICK 2 EXPAND THE GUESTBOOK <<</font></b></summary>
@@ -375,6 +375,20 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 |  other, with the fragment's focus request kicking ExoPlayer out   |
 |  of its own focus slot and auto-pausing. Removed the duplicate.   |
 |  ExoPlayer owns audio focus, as intended.                         |
++-------------------------------------------------------------------+
+
++-------------------------------------------------------------------+
+|  GUESTBOOK ENTRY #008                                  [v1.0.3]  |
++-------------------------------------------------------------------+
+|  CAUGHT UP WITH UPSTREAM v0.19.8                                  |
+|  -------------------------------                                  |
+|  Merged in upstream Jellyfin Android TV v0.19.8 -- the live TV    |
+|  guide overlay now properly puts focus on the channel you're      |
+|  currently watching when you open it (PR #5435), so flipping to   |
+|  the guide mid-show no longer launches you into channel #1 like   |
+|  some kind of cable subscriber savage. Plus four upstream CI      |
+|  housekeeping commits that don't touch the APK at all but were    |
+|  along for the ride. Fork = current. Vibes = preserved.           |
 +-------------------------------------------------------------------+
 ```
 
