@@ -60,7 +60,7 @@
 
 <!-- ====================== B A D G E S ====================== -->
 
-![Version](https://img.shields.io/badge/VERSION-v1.0.3-ff00ff?style=for-the-badge&labelColor=000000)
+![Version](https://img.shields.io/badge/VERSION-v1.0.4-ff00ff?style=for-the-badge&labelColor=000000)
 ![Platform](https://img.shields.io/badge/PLATFORM-Android%20TV-00f0ff?style=for-the-badge&logo=android&logoColor=aaff00&labelColor=000000)
 ![Built With](https://img.shields.io/badge/BUILT%20WITH-Docker-aaff00?style=for-the-badge&logo=docker&logoColor=00f0ff&labelColor=000000)
 ![License](https://img.shields.io/badge/LICENSE-GPLv2-ffe600?style=for-the-badge&labelColor=000000)
@@ -181,6 +181,15 @@ ENERGY**. Just code and a deep, abiding love for media servers and 256-color GIF
   and out pops a working APK. No "works on my machine" energy permitted.</font></td>
 </tr>
 <tr bgcolor="#0a0a0a">
+  <td valign="top"><b><font color="#00f0ff">ASS DIRECT PLAY</font></b></td>
+  <td><font color="#ffffff">Optional toggle so your server stops burning
+  ASS/SSA subtitles into the video stream every time you hit the subs
+  button. Device profile says "send the file as-is", video direct-plays
+  at full bitrate, server CPU stops smoking. ExoPlayer renders the
+  subtitle plain (libass-grade typesetting is on the roadmap). Off by
+  default; flip it on under Settings &gt; Playback.</font></td>
+</tr>
+<tr bgcolor="#1a0033">
   <td valign="top"><b><font color="#ff00ff">SIDE-BY-SIDE INSTALL</font></b></td>
   <td><font color="#ffffff">Upscaled uses the <tt>.upscaled</tt> applicationId
   suffix and ships as "Jellyfin Upscaled" in your Android launcher -- so you
@@ -276,11 +285,12 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 <tr bgcolor="#0a0a0a"><td><font color="#ffffff">DPAD left (overlay hidden)</font></td><td><font color="#ffffff">Skip backward</font></td></tr>
 <tr bgcolor="#1a0033"><td><font color="#ffffff">Tap the (i) info icon in transport</font></td><td><font color="#ffffff">Compact media info HUD top-right</font></td></tr>
 <tr bgcolor="#0a0a0a"><td><font color="#ffffff">Settings &gt; Playback &gt; PiP</font></td><td><font color="#ffffff">Toggle PiP on/off (default: on)</font></td></tr>
+<tr bgcolor="#1a0033"><td><font color="#ffffff">Settings &gt; Playback &gt; "ASS subtitle client rendering"</font></td><td><font color="#ffffff">Toggle on if your server transcodes whenever you enable subs (default: off)</font></td></tr>
 </table>
 
 <!-- ====================== W H A T S   N E W ====================== -->
 
-## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 3  .o0o
+## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 4  .o0o
 
 <details open>
 <summary><b><font color="#ff00ff">>> CLICK 2 EXPAND THE GUESTBOOK <<</font></b></summary>
@@ -389,6 +399,33 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 |  some kind of cable subscriber savage. Plus four upstream CI      |
 |  housekeeping commits that don't touch the APK at all but were    |
 |  along for the ride. Fork = current. Vibes = preserved.           |
++-------------------------------------------------------------------+
+
++-------------------------------------------------------------------+
+|  GUESTBOOK ENTRY #009                                  [v1.0.4]  |
++-------------------------------------------------------------------+
+|  STOP COOKING THE SERVER FOR FANSUB SIGNS                         |
+|  ----------------------------------------                         |
+|  New toggle: Settings > Playback > "Enable Advanced SubStation    |
+|  Alpha subtitle client rendering". OFF by default. Flip it ON.    |
+|                                                                   |
+|  Backstory: every time you turned subs on for a file with an ASS  |
+|  track (= every anime, every fansub, every modern TV rip, that    |
+|  one episode of Summer House), Jellyfin yelled at the server      |
+|  "BURN THIS INTO THE VIDEO!!!" and the server transcoded HEVC ->  |
+|  H264 at lower bitrate just so a styled "[whispers]" caption      |
+|  could exist on screen. Server CPU went brrr. Quality went down.  |
+|                                                                   |
+|  Now the device profile politely asks for the file as-is. Server  |
+|  stops melting. Video stays full-quality 10-bit HEVC. ExoPlayer   |
+|  renders the subtitle in plain styled text -- karaoke, animated   |
+|  signs, and proper typesetting are TODO for a future drop with    |
+|  libass. Worth it.                                                |
+|                                                                   |
+|  Bonus: PlaybackInfo log line now coughs up directPlay /          |
+|  DirectStream / Transcoding flags + sub stream index every time   |
+|  you start a video. "Why is this transcoding?" -> 5-second adb    |
+|  logcat answer. The age of grep-and-pray is over.                 |
 +-------------------------------------------------------------------+
 ```
 

@@ -118,6 +118,12 @@ class PlaybackAdvancedPreferencesScreen : OptionsFragment() {
 			}
 
 			checkbox {
+				setTitle(R.string.preference_enable_libass)
+				setContent(R.string.preference_enable_libass_desc)
+				bind(userPreferences, UserPreferences.assDirectPlay)
+			}
+
+			checkbox {
 				setTitle(R.string.pref_external_player)
 				bind(userPreferences, UserPreferences.useExternalPlayer)
 			}

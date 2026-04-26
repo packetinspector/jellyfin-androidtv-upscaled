@@ -16,6 +16,7 @@ import org.jellyfin.sdk.api.client.extensions.videosApi
 import org.jellyfin.sdk.model.api.PlayMethod
 import org.jellyfin.sdk.model.api.PlaybackInfoDto
 import org.jellyfin.sdk.model.api.PlaybackInfoResponse
+import timber.log.Timber
 
 private fun createStreamInfo(
 	api: ApiClient,
@@ -120,6 +121,17 @@ class PlaybackManager(
 				errorCode = response.errorCode!!
 			}
 		}
+
+		val source = response.mediaSources.firstOrNull {
+			options.mediaSourceId != null && it.id == options.mediaSourceId
+		} ?: response.mediaSources.firstOrNull()
+		Timber.i(
+			"PlaybackInfo: directPlay=%s directStream=%s transcoding=%s subtitleStreamIndex=%s",
+			source?.supportsDirectPlay,
+			source?.supportsDirectStream,
+			source?.supportsTranscoding,
+			options.subtitleStreamIndex,
+		)
 
 		createStreamInfo(api, options, response)
 	}

@@ -263,6 +263,14 @@ class UserPreferences(context: Context) : SharedPreferenceStore(
   		 * Enable PGS subtitle direct-play.
 		 */
 		var pgsDirectPlay = booleanPreference("pgs_enabled", true)
+
+		/**
+		 * Enable ASS/SSA subtitle direct-play. When true, the device profile declares
+		 * ASS/SSA as supported (embedded + external), so the server stops burning the
+		 * subtitle into the video and direct-play is preserved. Subtitle rendering on
+		 * the client falls back to Media3's lossy SsaParser until libass support ships.
+		 */
+		var assDirectPlay = booleanPreference("ass_direct_play_enabled", false)
 	}
 
 	init {
