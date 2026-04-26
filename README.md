@@ -7,56 +7,9 @@
 <div align="center">
 
 <!-- ====================== M A I N   B A N N E R ====================== -->
-<a href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 200" width="820" height="200" role="img" aria-label="Jellyfin Upscaled">
-  <defs>
-    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#fff7c4"/>
-      <stop offset="20%" stop-color="#ff5fcb"/>
-      <stop offset="50%" stop-color="#00f0ff"/>
-      <stop offset="80%" stop-color="#aaff00"/>
-      <stop offset="100%" stop-color="#ffe600"/>
-    </linearGradient>
-    <linearGradient id="bevel" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1a0033"/>
-      <stop offset="100%" stop-color="#000000"/>
-    </linearGradient>
-    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#ff00ff" stroke-width="0.4" opacity="0.25"/>
-    </pattern>
-  </defs>
-  <rect width="820" height="200" fill="url(#bevel)"/>
-  <rect width="820" height="200" fill="url(#grid)"/>
-  <g fill="#ffffff" shape-rendering="crispEdges">
-    <rect x="34" y="22" width="2" height="2"/><rect x="120" y="50" width="2" height="2"/>
-    <rect x="200" y="14" width="2" height="2"/><rect x="280" y="170" width="2" height="2"/>
-    <rect x="360" y="40" width="2" height="2"/><rect x="440" y="160" width="2" height="2"/>
-    <rect x="520" y="20" width="2" height="2"/><rect x="600" y="180" width="2" height="2"/>
-    <rect x="680" y="60" width="2" height="2"/><rect x="760" y="34" width="2" height="2"/>
-    <rect x="60" y="180" width="2" height="2"/><rect x="780" y="150" width="2" height="2"/>
-    <rect x="90" y="120" width="2" height="2"/><rect x="490" y="120" width="2" height="2"/>
-    <rect x="700" y="120" width="2" height="2"/><rect x="155" y="160" width="2" height="2"/>
-    <rect x="245" y="80" width="2" height="2"/><rect x="335" y="125" width="2" height="2"/>
-    <rect x="405" y="65" width="2" height="2"/><rect x="575" y="100" width="2" height="2"/>
-    <rect x="645" y="30" width="2" height="2"/><rect x="730" y="95" width="2" height="2"/>
-  </g>
-  <text x="410" y="98" text-anchor="middle"
-        font-family="Impact, 'Arial Black', sans-serif"
-        font-size="68" font-weight="900"
-        fill="url(#chrome)" stroke="#ff00ff" stroke-width="1.5"
-        letter-spacing="4">JELLYFIN UPSCALED</text>
-  <text x="410" y="138" text-anchor="middle"
-        font-family="'Courier New', monospace"
-        font-size="13" letter-spacing="6"
-        fill="#00f0ff">+--+ A   C U S T O M   F O R K +--+</text>
-  <text x="410" y="170" text-anchor="middle"
-        font-family="'Courier New', monospace"
-        font-size="11" letter-spacing="2"
-        fill="#aaff00">**  PiP  ::  PERF  ::  SEEK  ::  GLITTER  **</text>
-  <g fill="#ffe600">
-    <polygon points="20,20 24,28 32,32 24,36 20,44 16,36 8,32 16,28"/>
-    <polygon points="800,180 802,184 806,186 802,188 800,192 798,188 794,186 798,184"/>
-  </g>
-</svg></a>
+<p align="center">
+  <img src="assets/banner.png" alt="Jellyfin Upscaled -- under eternal construction since 1997" width="800">
+</p>
 
 <!-- ====================== B A D G E S ====================== -->
 
@@ -117,7 +70,7 @@
 
 ## .·:*¨¨*:·.  A B O U T   T H I S   P A G E  .·:*¨¨*:·.
 
-<img align="right" alt="A pixel jellyfish" width="160" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cmVjdCB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIGZpbGw9IiMwMDAiLz48ZyBmaWxsPSIjZmY1ZmNiIj48cmVjdCB4PSI1IiB5PSIyIiB3aWR0aD0iNiIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iNCIgeT0iMyIgd2lkdGg9IjgiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjMiIHk9IjQiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iMyIgeT0iNSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEiLz48L2c+PGcgZmlsbD0iI2ZmZmZmZiI+PHJlY3QgeD0iNSIgeT0iNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjkiIHk9IjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48L2c+PGcgZmlsbD0iI2ZmMDBmZiI+PHJlY3QgeD0iMyIgeT0iNiIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI0IiB5PSI3IiB3aWR0aD0iOCIgaGVpZ2h0PSIxIi8+PC9nPjxnIGZpbGw9IiMwMGYwZmYiPjxyZWN0IHg9IjQiIHk9IjgiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI2IiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iOCIgeT0iOCIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjEwIiB5PSI4IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iNCIgeT0iOSIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjYiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI4IiB5PSI5IiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iMTAiIHk9IjkiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI0IiB5PSIxMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjYiIHk9IjEwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iOCIgeT0iMTAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSIxMCIgeT0iMTAiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI1IiB5PSIxMSIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjciIHk9IjExIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iOSIgeT0iMTEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSIxMSIgeT0iMTEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI1IiB5PSIxMiIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjciIHk9IjEyIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iOSIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSIxMSIgeT0iMTIiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSI3IiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjEwIiB5PSIxMyIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjwvZz48ZyBmaWxsPSIjYWFmZjAwIj48cmVjdCB4PSIxIiB5PSIxIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIi8+PHJlY3QgeD0iMTQiIHk9IjEiIHdpZHRoPSIxIiBoZWlnaHQ9IjEiLz48cmVjdCB4PSIxIiB5PSIxNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIxNCIgd2lkdGg9IjEiIGhlaWdodD0iMSIvPjwvZz48L3N2Zz4=" />
+<img src="assets/mascot.png" align="right" width="180" alt="kwl jellyfish mascot">
 
 GREETINGS, SURFER!! You have stumbled upon **JELLYFIN UPSCALED**, a totally rad
 custom build of the Jellyfin Android TV client, hand-modded for maximum vibes.
@@ -280,6 +233,10 @@ app/build/outputs/apk/debug/jellyfin-androidtv-v0.0.0-dev.1-debug.apk
 </table>
 
 <!-- ====================== W H A T S   N E W ====================== -->
+
+<p align="center">
+  <img src="assets/mascot-sm.png" width="48" alt="">
+</p>
 
 ## o0o.  W H A T ' S   N E W   I N   v 1 . 0 . 4  .o0o
 
