@@ -227,15 +227,6 @@ ENERGY**. Just code and a deep, abiding love for media servers and 256-color GIF
 
 >> [**[ DOWNLOAD THE APK FROM THE LATEST RELEASE ]**](https://github.com/packetinspector/jellyfin-androidtv-upscaled/releases/latest) <<
 
-If you already have the official client installed, you might get a signature
-mismatch. That's fine!! Just uninstall the old debug build first:
-
-```bash
-adb uninstall org.jellyfin.androidtv.upscaled
-```
-
-Then install away.
-
 ### `;========== METHOD 2: BUILD IT YOURSELF (THE COOL KID WAY) ==========`
 
 ```bash
