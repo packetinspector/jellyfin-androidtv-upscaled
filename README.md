@@ -220,7 +220,7 @@ ENERGY**. Just code and a deep, abiding love for media servers and 256-color GIF
 ;----------------------------------------------------------------
 ; 1. Visit the release page (link below).
 ; 2. Download the .apk file.
-; 3. adb install -r jellyfin-androidtv-v0.0.0-dev.1-debug.apk
+; 3. adb install -r jellyfin-upscaled-v1.0.4.apk
 ; 4. Open the app on your Android TV. You're a STAR.
 ;----------------------------------------------------------------
 ```
