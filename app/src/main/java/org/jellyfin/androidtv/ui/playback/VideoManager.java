@@ -629,6 +629,7 @@ public class VideoManager {
     }
 
     private void releasePlayer() {
+        _helper.setScreensaverLock(false);
         if (mExoPlayer != null) {
             mExoPlayerView.setPlayer(null);
             mExoPlayer.release();
