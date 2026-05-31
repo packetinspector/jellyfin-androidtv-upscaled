@@ -64,15 +64,20 @@ class PlaybackLauncher(
 			if (userPreferences[UserPreferences.useExternalPlayer] && items.all { it.supportsExternalPlayer }) {
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
 			} else if (!isLiveTv && pipManager.isPiPEnabled(context)) {
-				// PlaybackActivity is singleTop. If one is already alive (incl. in PiP),
-				// Android delivers the new intent to it via onNewIntent → fragment swap,
-				// and auto-exits PiP back to full-screen. DO NOT call finish() on the
-				// existing activity here — it races with startActivity and can:
-				//   - leak the old ExoPlayer (orphaned audio + skipping playback)
-				//   - deliver onNewIntent to a dying activity (crash)
-				//   - leave the singleton PlaybackController in a half-torn state
-				//     (symptom: "play but skip, can't start anything until force quit")
-				context.startActivity(ActivityDestinations.playbackActivity(context, position ?: 0))
+				// If there's already a PiP'd PlaybackActivity, we have to fully tear it
+				// down before launching the new one:
+				//   - PiP windows live in their own task stack on TV, so singleTop on
+				//     startActivity from MainActivity's task doesn't find them →
+				//     a fresh PlaybackActivity is created and the old PiP keeps playing
+				//     (orphan PiP window symptom)
+				//   - Calling finish() then immediately startActivity races onDestroy
+				//     against new-activity setup → crashes / stuck players / audio
+				//     focus thrash (symptom from v1.0.5: "plays but skips, can't start
+				//     anything else until force quit")
+				// stopPiPPlaybackThen finishes the existing activity and defers the
+				// startActivity until its onDestroy has fully run.
+				val launchIntent = ActivityDestinations.playbackActivity(context, position ?: 0)
+				pipManager.stopPiPPlaybackThen { context.startActivity(launchIntent) }
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
 				val destination = Destinations.videoPlayerNew(position)
 				navigationRepository.navigate(destination, replace)

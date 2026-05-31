@@ -228,10 +228,11 @@ class PlaybackActivity : FragmentActivity() {
 	}
 
 	override fun onDestroy() {
-		// Always clear PiP state on destroy — prevents orphaned player state
+		// Always clear PiP state on destroy — prevents orphaned player state.
+		// notifyActivityDestroyed also fires any deferred action queued by
+		// PiPManager.stopPiPPlaybackThen (e.g. start-new-playback after teardown).
 		isInPipMode = false
-		pipManager.isCurrentlyInPiP = false
-		pipManager.finishPlaybackActivity = null
+		pipManager.notifyActivityDestroyed()
 
 		super.onDestroy()
 

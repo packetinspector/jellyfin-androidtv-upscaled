@@ -31,18 +31,61 @@ class PiPManager(
 	var finishPlaybackActivity: (() -> Unit)? = null
 
 	/**
+	 * Action queued to run after the current PlaybackActivity reaches onDestroy.
+	 * Used by PlaybackLauncher to defer "start new playback" until the existing
+	 * PiP'd activity has fully torn down — prevents both the orphaned-PiP-window
+	 * symptom (new activity launches in a different task while old keeps living
+	 * in PiP) and the half-destroyed-ExoPlayer races.
+	 */
+	private var pendingAfterDestroy: (() -> Unit)? = null
+
+	/**
 	 * Request that any active PiP playback stops and finishes.
 	 *
-	 * Only safe to call when you are NOT about to immediately launch new playback.
-	 * Used by MainActivity to kill orphaned PiP windows when the app is exiting.
-	 * For "launch new video while in PiP" use the singleTop + onNewIntent path
-	 * (just startActivity on PlaybackActivity) — calling this then startActivity
-	 * races and leaks the old ExoPlayer.
+	 * Fire-and-forget. Used by MainActivity to kill orphan PiP windows on app exit.
+	 * If you need to start new playback right after, use [stopPiPPlaybackThen]
+	 * instead — it waits for onDestroy before invoking your action.
 	 */
 	fun stopPiPPlayback() {
 		if (isCurrentlyInPiP) {
 			Timber.i("Stopping PiP playback via callback")
 			finishPlaybackActivity?.invoke()
+		}
+	}
+
+	/**
+	 * Stop any active PiP playback, then run [action] after the PlaybackActivity's
+	 * onDestroy completes. If nothing is currently in PiP, [action] runs immediately.
+	 *
+	 * This is the correct path for "user picked a new video while old one is in PiP":
+	 * starting a new activity before the PiP'd one is destroyed leaves the PiP
+	 * window orphaned (it lives in its own task stack on TV), and racing the
+	 * destroy with new-activity setup corrupts shared player state.
+	 */
+	fun stopPiPPlaybackThen(action: () -> Unit) {
+		val finish = finishPlaybackActivity
+		if (!isCurrentlyInPiP || finish == null) {
+			Timber.i("stopPiPPlaybackThen: nothing in PiP, running action immediately")
+			action()
+			return
+		}
+		Timber.i("stopPiPPlaybackThen: queuing action until PlaybackActivity is destroyed")
+		pendingAfterDestroy = action
+		finish()
+	}
+
+	/**
+	 * Called by PlaybackActivity.onDestroy to clear state and fire any deferred
+	 * post-destroy action queued by [stopPiPPlaybackThen].
+	 */
+	fun notifyActivityDestroyed() {
+		isCurrentlyInPiP = false
+		finishPlaybackActivity = null
+		val action = pendingAfterDestroy
+		pendingAfterDestroy = null
+		if (action != null) {
+			Timber.i("PlaybackActivity destroyed — running deferred action")
+			action()
 		}
 	}
 
