@@ -228,13 +228,20 @@ class PlaybackActivity : FragmentActivity() {
 	}
 
 	override fun onDestroy() {
-		// Always clear PiP state on destroy — prevents orphaned player state.
-		// notifyActivityDestroyed also fires any deferred action queued by
-		// PiPManager.stopPiPPlaybackThen (e.g. start-new-playback after teardown).
+		// Clear non-fragment-related PiP state.
 		isInPipMode = false
-		pipManager.notifyActivityDestroyed()
 
+		// IMPORTANT: super.onDestroy() must run BEFORE notifyActivityDestroyed.
+		// FragmentActivity.onDestroy() dispatches fragment.onDestroy via super,
+		// which is what releases the ExoPlayer inside the player fragment.
+		// notifyActivityDestroyed fires any queued action (e.g. startActivity for
+		// new playback) — that must happen AFTER the old player is released or
+		// the new ExoPlayer fights the old one for surface + audio focus, which
+		// manifests as a crash when a user picks new playback from MainActivity
+		// while a stale PiP window is alive.
 		super.onDestroy()
+
+		pipManager.notifyActivityDestroyed()
 
 		Timber.i("PlaybackActivity destroyed — PiP state cleared")
 
