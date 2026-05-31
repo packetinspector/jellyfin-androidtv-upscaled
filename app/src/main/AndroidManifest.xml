@@ -131,7 +131,6 @@
 
         <activity
             android:name=".ui.playback.PlaybackActivity"
-            android:launchMode="singleTop"
             android:supportsPictureInPicture="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:resizeableActivity="true"

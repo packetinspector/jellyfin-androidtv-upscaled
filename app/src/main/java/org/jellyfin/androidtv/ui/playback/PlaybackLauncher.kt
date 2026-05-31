@@ -83,7 +83,13 @@ class PlaybackLauncher(
 				// icon — the deferred lambda may otherwise hold a dead Activity.
 				val appContext = context.applicationContext
 				val launchIntent = ActivityDestinations.playbackActivity(appContext, position ?: 0).apply {
-					addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					// NEW_TASK because we're starting from application context after a
+					// deferred callback (calling Activity may already be gone).
+					// MULTIPLE_TASK so a dying PiP'd PlaybackActivity (still attached to
+					// its task in the framework's record even after onDestroy) doesn't
+					// absorb this intent and never get to render — symptom from launcher
+					// round-trip was new playback silently never starting.
+					addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
 				}
 				pipManager.stopPiPPlaybackThen { appContext.startActivity(launchIntent) }
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {

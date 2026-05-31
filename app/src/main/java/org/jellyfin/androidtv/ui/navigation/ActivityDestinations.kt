@@ -45,7 +45,13 @@ object ActivityDestinations {
 
 	fun playbackActivity(context: Context, position: Int = 0) = Intent(context, PlaybackActivity::class.java).apply {
 		putExtra(PlaybackActivity.EXTRA_POSITION, position)
-		addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+		// NB: no FLAG_ACTIVITY_SINGLE_TOP and manifest declares standard launchMode.
+		// SINGLE_TOP was routing new-playback intents to a dying PiP'd PlaybackActivity
+		// via onNewIntent, where the fragment swap couldn't complete before the
+		// activity finished destroying — symptom was new playback silently never
+		// starting after a launcher round-trip. Each launch now creates a fresh
+		// instance; queue advance / play-next continue to swap fragments in-place
+		// without involving startActivity.
 	}
 
 	fun externalPlayer(context: Context, position: Duration = Duration.ZERO) = Intent(context, ExternalPlayerActivity::class.java).apply {
