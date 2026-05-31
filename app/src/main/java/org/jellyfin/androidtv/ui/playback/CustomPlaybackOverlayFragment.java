@@ -1206,6 +1206,11 @@ public class CustomPlaybackOverlayFragment extends Fragment implements LiveTvGui
     }
 
     public void setCurrentTime(long time) {
+        // Guard: the progress-loop runnable in VideoManager keeps firing after the
+        // fragment's view is destroyed (binding = null in onDestroyView). Without
+        // this check we crash with NPE on binding.skipOverlay — observed when
+        // tearing down a PiP'd PlaybackActivity to launch new playback.
+        if (binding == null) return;
         binding.skipOverlay.setCurrentPositionMs(time);
         if (leanbackOverlayFragment != null)
             leanbackOverlayFragment.updateCurrentPosition();
