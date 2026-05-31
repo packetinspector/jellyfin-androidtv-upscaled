@@ -64,10 +64,14 @@ class PlaybackLauncher(
 			if (userPreferences[UserPreferences.useExternalPlayer] && items.all { it.supportsExternalPlayer }) {
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
 			} else if (!isLiveTv && pipManager.isPiPEnabled(context)) {
-				// Stop any existing PiP playback before launching the new video
-				if (pipManager.isCurrentlyInPiP) {
-					pipManager.stopPiPPlayback()
-				}
+				// PlaybackActivity is singleTop. If one is already alive (incl. in PiP),
+				// Android delivers the new intent to it via onNewIntent → fragment swap,
+				// and auto-exits PiP back to full-screen. DO NOT call finish() on the
+				// existing activity here — it races with startActivity and can:
+				//   - leak the old ExoPlayer (orphaned audio + skipping playback)
+				//   - deliver onNewIntent to a dying activity (crash)
+				//   - leave the singleton PlaybackController in a half-torn state
+				//     (symptom: "play but skip, can't start anything until force quit")
 				context.startActivity(ActivityDestinations.playbackActivity(context, position ?: 0))
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
 				val destination = Destinations.videoPlayerNew(position)

@@ -32,6 +32,12 @@ class PiPManager(
 
 	/**
 	 * Request that any active PiP playback stops and finishes.
+	 *
+	 * Only safe to call when you are NOT about to immediately launch new playback.
+	 * Used by MainActivity to kill orphaned PiP windows when the app is exiting.
+	 * For "launch new video while in PiP" use the singleTop + onNewIntent path
+	 * (just startActivity on PlaybackActivity) — calling this then startActivity
+	 * races and leaks the old ExoPlayer.
 	 */
 	fun stopPiPPlayback() {
 		if (isCurrentlyInPiP) {
