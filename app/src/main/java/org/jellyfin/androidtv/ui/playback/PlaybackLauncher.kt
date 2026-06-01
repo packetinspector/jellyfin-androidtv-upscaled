@@ -1,7 +1,6 @@
 package org.jellyfin.androidtv.ui.playback
 
 import android.content.Context
-import android.content.Intent
 import org.jellyfin.androidtv.preference.UserPreferences
 import org.jellyfin.androidtv.ui.navigation.ActivityDestinations
 import org.jellyfin.androidtv.ui.navigation.Destinations
@@ -65,33 +64,18 @@ class PlaybackLauncher(
 			if (userPreferences[UserPreferences.useExternalPlayer] && items.all { it.supportsExternalPlayer }) {
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
 			} else if (!isLiveTv && pipManager.isPiPEnabled(context)) {
-				// If there's already a PiP'd PlaybackActivity, we have to fully tear it
-				// down before launching the new one:
-				//   - PiP windows live in their own task stack on TV, so singleTop on
-				//     startActivity from MainActivity's task doesn't find them →
-				//     a fresh PlaybackActivity is created and the old PiP keeps playing
-				//     (orphan PiP window symptom from v1.0.6)
-				//   - Calling finish() then immediately startActivity races onDestroy
-				//     against new-activity setup → crashes / stuck players / audio
-				//     focus thrash (symptom from v1.0.5)
-				// stopPiPPlaybackThen finishes the existing activity and defers the
-				// startActivity until its onDestroy + fragment teardown have run.
-				//
-				// Use applicationContext + NEW_TASK because the calling Activity
-				// (MainActivity) may have been clobbered by StartupActivity's
-				// singleTask clear if the user went home then back via the launcher
-				// icon — the deferred lambda may otherwise hold a dead Activity.
-				val appContext = context.applicationContext
-				val launchIntent = ActivityDestinations.playbackActivity(appContext, position ?: 0).apply {
-					// NEW_TASK because we're starting from application context after a
-					// deferred callback (calling Activity may already be gone).
-					// MULTIPLE_TASK so a dying PiP'd PlaybackActivity (still attached to
-					// its task in the framework's record even after onDestroy) doesn't
-					// absorb this intent and never get to render — symptom from launcher
-					// round-trip was new playback silently never starting.
-					addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-				}
-				pipManager.stopPiPPlaybackThen { appContext.startActivity(launchIntent) }
+				// If there's already a PiP'd PlaybackActivity, tear it down BEFORE
+				// launching the new one. The PiP'd activity lives in its own task
+				// (Android moves it there on PiP entry on TV). PiPManager's
+				// finishPlaybackActivity callback uses finishAndRemoveTask() when
+				// in PiP, which removes the task record itself — without that, the
+				// dying activity stays "top of its task" long enough that
+				// SINGLE_TOP delivery on our new startActivity gets absorbed via
+				// onNewIntent and the new player never starts.
+				// stopPiPPlaybackThen defers the startActivity until onDestroy +
+				// fragment teardown have completed.
+				val launchIntent = ActivityDestinations.playbackActivity(context, position ?: 0)
+				pipManager.stopPiPPlaybackThen { context.startActivity(launchIntent) }
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
 				val destination = Destinations.videoPlayerNew(position)
 				navigationRepository.navigate(destination, replace)

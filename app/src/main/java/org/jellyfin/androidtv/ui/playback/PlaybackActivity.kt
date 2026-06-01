@@ -43,8 +43,26 @@ class PlaybackActivity : FragmentActivity() {
 
 		setContentView(R.layout.activity_playback)
 
-		// Register callback so MainActivity can finish us when the app exits
-		pipManager.finishPlaybackActivity = { finish() }
+		// Register callback so MainActivity / PlaybackLauncher can tear us down.
+		// finishAndRemoveTask when in PiP is critical: on TV, PiP entry moves
+		// PlaybackActivity into its own task. Plain finish() leaves the task
+		// record alive long enough that a subsequent SINGLE_TOP startActivity
+		// gets delivered to the dying activity via onNewIntent (result code 3 in
+		// ActivityTaskManager log) and the new player never starts.
+		// finishAndRemoveTask forcibly removes the task record so the next
+		// startActivity creates a fresh instance.
+		// Plain finish() is required when NOT in PiP — PlaybackActivity then
+		// shares the main task with MainActivity, and finishAndRemoveTask would
+		// kill MainActivity too.
+		pipManager.finishPlaybackActivity = {
+			if (isInPipMode) {
+				Timber.i("finishPlaybackActivity: in PiP — using finishAndRemoveTask")
+				finishAndRemoveTask()
+			} else {
+				Timber.i("finishPlaybackActivity: not in PiP — using finish")
+				finish()
+			}
+		}
 
 		// Keep screen on during playback
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
