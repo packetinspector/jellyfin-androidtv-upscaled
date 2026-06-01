@@ -34,6 +34,7 @@ class PlaybackActivity : FragmentActivity() {
 	private val pipManager by inject<PiPManager>()
 	private val backgroundService by inject<BackgroundService>()
 	private val imageLoader by inject<ImageLoader>()
+	private val playbackControllerContainer by inject<PlaybackControllerContainer>()
 
 	var isInPipMode = false
 		private set
@@ -249,14 +250,22 @@ class PlaybackActivity : FragmentActivity() {
 		// Clear non-fragment-related PiP state.
 		isInPipMode = false
 
+		// Force ExoPlayer release BEFORE super.onDestroy and BEFORE we notify
+		// PiPManager (which fires the deferred new-playback launch). The
+		// fragment's onStop() skips endPlayback when in PiP to keep audio alive
+		// while the user is elsewhere — but on TV onStop only fires once on
+		// entering PiP, so when finishAndRemoveTask is called later the activity
+		// goes onPause→onDestroy with no second onStop, and the old ExoPlayer
+		// leaks. Without this the new player starts while the old one is still
+		// holding audio focus + decoders → stutter, audio overlap, and the
+		// observed 'only fix is force stop' state. endPlayback is idempotent.
+		playbackControllerContainer.playbackController?.endPlayback()
+
 		// IMPORTANT: super.onDestroy() must run BEFORE notifyActivityDestroyed.
-		// FragmentActivity.onDestroy() dispatches fragment.onDestroy via super,
-		// which is what releases the ExoPlayer inside the player fragment.
+		// FragmentActivity.onDestroy() dispatches fragment.onDestroy via super.
 		// notifyActivityDestroyed fires any queued action (e.g. startActivity for
 		// new playback) — that must happen AFTER the old player is released or
-		// the new ExoPlayer fights the old one for surface + audio focus, which
-		// manifests as a crash when a user picks new playback from MainActivity
-		// while a stale PiP window is alive.
+		// the new ExoPlayer fights the old one for surface + audio focus.
 		super.onDestroy()
 
 		pipManager.notifyActivityDestroyed()
