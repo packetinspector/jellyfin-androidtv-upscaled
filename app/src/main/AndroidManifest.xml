@@ -129,9 +129,16 @@
 
         <activity android:name=".ui.playback.ExternalPlayerActivity" />
 
+        <!-- singleInstance (SmartTube pattern): the player always lives alone in its
+             own task and is NEVER destroyed/recreated on PiP transitions. Launching
+             it again (e.g. picking a new video while PiP'd) routes to the existing
+             instance via onNewIntent and Android expands the PiP window in place.
+             This eliminates the whole class of finish-then-relaunch races
+             (orphan PiP windows, intents delivered to dying instances, leaked
+             ExoPlayers fighting for audio focus). -->
         <activity
             android:name=".ui.playback.PlaybackActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleInstance"
             android:supportsPictureInPicture="true"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:resizeableActivity="true"

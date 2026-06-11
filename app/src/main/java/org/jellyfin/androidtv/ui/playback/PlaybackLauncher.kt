@@ -64,18 +64,14 @@ class PlaybackLauncher(
 			if (userPreferences[UserPreferences.useExternalPlayer] && items.all { it.supportsExternalPlayer }) {
 				context.startActivity(ActivityDestinations.externalPlayer(context, position?.milliseconds ?: Duration.ZERO))
 			} else if (!isLiveTv && pipManager.isPiPEnabled(context)) {
-				// If there's already a PiP'd PlaybackActivity, tear it down BEFORE
-				// launching the new one. The PiP'd activity lives in its own task
-				// (Android moves it there on PiP entry on TV). PiPManager's
-				// finishPlaybackActivity callback uses finishAndRemoveTask() when
-				// in PiP, which removes the task record itself — without that, the
-				// dying activity stays "top of its task" long enough that
-				// SINGLE_TOP delivery on our new startActivity gets absorbed via
-				// onNewIntent and the new player never starts.
-				// stopPiPPlaybackThen defers the startActivity until onDestroy +
-				// fragment teardown have completed.
-				val launchIntent = ActivityDestinations.playbackActivity(context, position ?: 0)
-				pipManager.stopPiPPlaybackThen { context.startActivity(launchIntent) }
+				// PlaybackActivity is singleInstance (SmartTube pattern). If it's
+				// already alive — fullscreen or PiP'd — this intent is delivered to
+				// the existing instance via onNewIntent, which stops the old video
+				// and swaps the player fragment in place; Android expands the PiP
+				// window back to fullscreen automatically. If it's not running, a
+				// fresh instance starts in its own task. Either way: no teardown
+				// races, no orphaned players.
+				context.startActivity(ActivityDestinations.playbackActivity(context, position ?: 0))
 			} else if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
 				val destination = Destinations.videoPlayerNew(position)
 				navigationRepository.navigate(destination, replace)

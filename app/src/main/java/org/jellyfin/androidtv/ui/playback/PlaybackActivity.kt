@@ -39,31 +39,25 @@ class PlaybackActivity : FragmentActivity() {
 	var isInPipMode = false
 		private set
 
+	/**
+	 * Set when onNewIntent arrives while in PiP: Android is about to expand us back
+	 * to fullscreen as part of intent delivery. Suppresses the "PiP was dismissed →
+	 * finish" heuristic in onPictureInPictureModeChanged, which could otherwise
+	 * misfire if the mode-change callback lands before the lifecycle reaches STARTED
+	 * during the expand transition.
+	 */
+	private var pipExitViaIntent = false
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
 		setContentView(R.layout.activity_playback)
 
-		// Register callback so MainActivity / PlaybackLauncher can tear us down.
-		// finishAndRemoveTask when in PiP is critical: on TV, PiP entry moves
-		// PlaybackActivity into its own task. Plain finish() leaves the task
-		// record alive long enough that a subsequent SINGLE_TOP startActivity
-		// gets delivered to the dying activity via onNewIntent (result code 3 in
-		// ActivityTaskManager log) and the new player never starts.
-		// finishAndRemoveTask forcibly removes the task record so the next
-		// startActivity creates a fresh instance.
-		// Plain finish() is required when NOT in PiP — PlaybackActivity then
-		// shares the main task with MainActivity, and finishAndRemoveTask would
-		// kill MainActivity too.
-		pipManager.finishPlaybackActivity = {
-			if (isInPipMode) {
-				Timber.i("finishPlaybackActivity: in PiP — using finishAndRemoveTask")
-				finishAndRemoveTask()
-			} else {
-				Timber.i("finishPlaybackActivity: not in PiP — using finish")
-				finish()
-			}
-		}
+		// Teardown callback for MainActivity's app-exit cleanup. This activity is
+		// singleInstance — always alone in its own task — so finishAndRemoveTask
+		// is always safe and also removes the task record (a plain finish() can
+		// leave a ghost task that absorbs the next launch intent).
+		pipManager.finishPlaybackActivity = { finishAndRemoveTask() }
 
 		// Keep screen on during playback
 		window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -83,11 +77,25 @@ class PlaybackActivity : FragmentActivity() {
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		setIntent(intent)
-		Timber.i("onNewIntent — replacing player fragment with new queue")
+		Timber.i("onNewIntent — replacing player fragment with new queue (inPiP=$isInPipMode)")
+
+		// Android will expand the PiP window to fullscreen as part of delivering
+		// this intent — that's an expected PiP exit, not a user dismissal.
+		if (isInPipMode) pipExitViaIntent = true
+
 		launchPlayerFragment(intent)
 	}
 
 	private fun launchPlayerFragment(intent: Intent) {
+		// Deterministically stop the current video and release its ExoPlayer
+		// BEFORE creating the new player fragment. The fragment lifecycle alone
+		// can't be trusted for this: CustomPlaybackOverlayFragment.onStop skips
+		// endPlayback while in PiP (by design — PiP keeps playing), so a fragment
+		// swap during/right after PiP would leak the old player, which then fights
+		// the new one for audio focus and decoders (stutter, overlapping audio).
+		// endPlayback is idempotent — no-op if playback already ended.
+		playbackControllerContainer.playbackController?.endPlayback()
+
 		val position = intent.getIntExtra(EXTRA_POSITION, 0)
 
 		val fragment: Fragment = if (userPreferences[UserPreferences.playbackRewriteVideoEnabled]) {
@@ -100,9 +108,12 @@ class PlaybackActivity : FragmentActivity() {
 			}
 		}
 
+		// commitAllowingStateLoss: this can run from onNewIntent while the activity
+		// is PiP'd/paused, possibly after state save. Losing fragment state is fine
+		// here — we are wholesale replacing the player with a new queue.
 		supportFragmentManager.beginTransaction()
 			.replace(R.id.playback_container, fragment)
-			.commit()
+			.commitAllowingStateLoss()
 	}
 
 	/**
@@ -187,16 +198,26 @@ class PlaybackActivity : FragmentActivity() {
 			imageLoader.memoryCache?.clear()
 			Timber.i("Freed backdrop bitmaps and cleared image cache for PiP mode")
 		} else {
-			// Exiting PiP — either expanding to fullscreen or being dismissed.
-			// If the lifecycle is at CREATED or below, the user dismissed the PiP window
-			// (not expanding). In that case, finish the activity so the player stops.
-			// onStop already ran (and was skipped) while in PiP, so without this
-			// the player keeps running in the background.
-			if (!lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
+			// Exiting PiP — three possible causes:
+			// 1. Intent-driven expand (new video picked while PiP'd): pipExitViaIntent
+			//    is set; the activity is coming to the foreground, do nothing.
+			// 2. User expanded the PiP window: lifecycle reaches STARTED, do nothing.
+			// 3. User dismissed the PiP window (X): lifecycle stays below STARTED —
+			//    finish so the player actually stops instead of running headless.
+			if (pipExitViaIntent) {
+				Timber.i("PiP exited due to incoming play intent — not a dismissal")
+				pipExitViaIntent = false
+			} else if (!lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)) {
 				Timber.i("PiP was dismissed — finishing activity to stop playback")
-				finish()
+				finishAndRemoveTask()
 			}
 		}
+	}
+
+	override fun onResume() {
+		super.onResume()
+		// Any pending intent-driven PiP exit has fully completed once we're resumed.
+		pipExitViaIntent = false
 	}
 
 	override fun onTrimMemory(level: Int) {
@@ -250,22 +271,18 @@ class PlaybackActivity : FragmentActivity() {
 		// Clear non-fragment-related PiP state.
 		isInPipMode = false
 
-		// Force ExoPlayer release BEFORE super.onDestroy and BEFORE we notify
-		// PiPManager (which fires the deferred new-playback launch). The
-		// fragment's onStop() skips endPlayback when in PiP to keep audio alive
-		// while the user is elsewhere — but on TV onStop only fires once on
-		// entering PiP, so when finishAndRemoveTask is called later the activity
-		// goes onPause→onDestroy with no second onStop, and the old ExoPlayer
-		// leaks. Without this the new player starts while the old one is still
-		// holding audio focus + decoders → stutter, audio overlap, and the
-		// observed 'only fix is force stop' state. endPlayback is idempotent.
-		playbackControllerContainer.playbackController?.endPlayback()
+		// Safety net: release the ExoPlayer if it's still alive. The fragment's
+		// onStop skips endPlayback while in PiP (by design), and the PiP-dismiss →
+		// finishAndRemoveTask path can reach onDestroy without a cleanup-eligible
+		// onStop. Ownership check: only end playback if the controller's fragment
+		// belongs to THIS activity (or has already been detached) — never kill a
+		// controller that a newer activity instance has since created.
+		val controller = playbackControllerContainer.playbackController
+		val controllerActivity = controller?.fragment?.activity
+		if (controller != null && (controllerActivity == null || controllerActivity == this)) {
+			controller.endPlayback()
+		}
 
-		// IMPORTANT: super.onDestroy() must run BEFORE notifyActivityDestroyed.
-		// FragmentActivity.onDestroy() dispatches fragment.onDestroy via super.
-		// notifyActivityDestroyed fires any queued action (e.g. startActivity for
-		// new playback) — that must happen AFTER the old player is released or
-		// the new ExoPlayer fights the old one for surface + audio focus.
 		super.onDestroy()
 
 		pipManager.notifyActivityDestroyed()

@@ -5,8 +5,6 @@ import android.app.AppOpsManager
 import android.app.PictureInPictureParams
 import android.content.Context
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.os.Process
 import android.util.Rational
 import androidx.annotation.RequiresApi
@@ -27,34 +25,19 @@ class PiPManager(
 		internal set
 
 	/**
-	 * Callback to finish the PlaybackActivity. Set by PlaybackActivity on create,
-	 * cleared on destroy. Used by MainActivity to kill PiP when the app exits.
+	 * Callback to finish the PlaybackActivity (finishAndRemoveTask — the activity
+	 * is singleInstance, always alone in its own task). Set by PlaybackActivity on
+	 * create, cleared on destroy. Used by MainActivity to kill PiP on app exit.
+	 *
+	 * NOTE: launching new playback does NOT go through this. PlaybackActivity is
+	 * singleInstance; startActivity routes to the live instance via onNewIntent
+	 * which swaps the player in place. No teardown needed, no teardown races.
 	 */
 	var finishPlaybackActivity: (() -> Unit)? = null
 
 	/**
-	 * Action queued to run after the current PlaybackActivity reaches onDestroy.
-	 * Used by PlaybackLauncher to defer "start new playback" until the existing
-	 * PiP'd activity has fully torn down — prevents both the orphaned-PiP-window
-	 * symptom (new activity launches in a different task while old keeps living
-	 * in PiP) and the half-destroyed-ExoPlayer races.
-	 */
-	private var pendingAfterDestroy: (() -> Unit)? = null
-
-	private val mainHandler = Handler(Looper.getMainLooper())
-
-	/** Safety-net runnable: if onDestroy never fires (process kill, etc), still run the deferred action. */
-	private val deferredTimeoutRunnable = Runnable {
-		Timber.w("Deferred PiP action timed out waiting for onDestroy — firing anyway")
-		firePendingAction("timeout")
-	}
-
-	/**
 	 * Request that any active PiP playback stops and finishes.
-	 *
-	 * Fire-and-forget. Used by MainActivity to kill orphan PiP windows on app exit.
-	 * If you need to start new playback right after, use [stopPiPPlaybackThen]
-	 * instead — it waits for onDestroy before invoking your action.
+	 * Used by MainActivity to kill orphan PiP windows on app exit.
 	 */
 	fun stopPiPPlayback() {
 		if (isCurrentlyInPiP) {
@@ -64,56 +47,11 @@ class PiPManager(
 	}
 
 	/**
-	 * Stop any active PiP playback, then run [action] after the PlaybackActivity's
-	 * onDestroy completes. If nothing is currently in PiP, [action] runs immediately.
-	 *
-	 * This is the correct path for "user picked a new video while old one is in PiP":
-	 * starting a new activity before the PiP'd one is destroyed leaves the PiP
-	 * window orphaned (it lives in its own task stack on TV), and racing the
-	 * destroy with new-activity setup corrupts shared player state.
-	 */
-	fun stopPiPPlaybackThen(action: () -> Unit) {
-		val finish = finishPlaybackActivity
-		if (!isCurrentlyInPiP || finish == null) {
-			Timber.i("stopPiPPlaybackThen: nothing in PiP, running action immediately")
-			action()
-			return
-		}
-		Timber.i("stopPiPPlaybackThen: queuing action until PlaybackActivity is destroyed")
-		pendingAfterDestroy = action
-		// Safety net in case onDestroy never fires (e.g., process kill, weird PiP cleanup)
-		mainHandler.postDelayed(deferredTimeoutRunnable, DEFERRED_TIMEOUT_MS)
-		finish()
-	}
-
-	/**
-	 * Called by PlaybackActivity.onDestroy to clear state and fire any deferred
-	 * post-destroy action queued by [stopPiPPlaybackThen].
-	 *
-	 * The action is posted to the main looper rather than invoked synchronously
-	 * so it runs AFTER the activity's super.onDestroy() and fragment teardown
-	 * have completed. Otherwise the action (typically startActivity → new
-	 * ExoPlayer) would set up its player before the old player's fragment.onDestroy
-	 * had released its ExoPlayer, causing audio focus / surface contention crashes.
+	 * Called by PlaybackActivity.onDestroy to clear PiP state.
 	 */
 	fun notifyActivityDestroyed() {
 		isCurrentlyInPiP = false
 		finishPlaybackActivity = null
-		mainHandler.removeCallbacks(deferredTimeoutRunnable)
-		firePendingAction("onDestroy")
-	}
-
-	private fun firePendingAction(reason: String) {
-		val action = pendingAfterDestroy ?: return
-		pendingAfterDestroy = null
-		Timber.i("Firing deferred PiP action (reason=$reason)")
-		mainHandler.post {
-			try {
-				action()
-			} catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
-				Timber.e(e, "Deferred PiP action threw")
-			}
-		}
 	}
 
 	fun isPiPSupported(context: Context): Boolean {
@@ -145,7 +83,6 @@ class PiPManager(
 	companion object {
 		private const val MAX_RATIO = 2.39f
 		private const val MIN_RATIO = 1f / 2.39f
-		private const val DEFERRED_TIMEOUT_MS = 3_000L
 
 		/**
 		 * Clamp an aspect ratio to the range allowed by Android PiP (approximately 1:2.39 to 2.39:1).
